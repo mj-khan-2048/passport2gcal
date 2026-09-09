@@ -1,15 +1,12 @@
-import * as readline from "readline";
+import * as readline from "readline/promises";
 
-export function askUser(question: string): Promise<string> {
+export async function askUser(questionStr: string): Promise<string> {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout,
     });
 
-    return new Promise((resolve) => {
-        rl.question(question, (answer) => {
-            rl.close();
-            resolve(answer.trim());
-        });
-    });
+    const answer = await rl.question(questionStr);
+    rl.close();
+    return answer.trim();
 }

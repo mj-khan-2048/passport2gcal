@@ -14,7 +14,7 @@ export async function runLoginAndScraper() {
 
     // .env Error Catch
     if (!email || !password || !loginUrl) {
-    throw new Error("Missing PASSPORT_EMAIL, PASSPORT_PASSWORD, or PASSPORT_LOGIN_URL in .env");
+        throw new Error("Missing PASSPORT_EMAIL, PASSPORT_PASSWORD, or PASSPORT_LOGIN_URL in .env");
     }
 
     // Main Login
@@ -41,10 +41,11 @@ export async function runLoginAndScraper() {
     await page.getByPlaceholder('Code').fill(code);
     await page.getByRole("button", { name: "Verify" }).click();
 
+    await page.getByRole("link", { name: "Schedule" }).click();
+
     console.log("Success! Logged in!");
 
     console.log("Navigating to Schedule page...");
-    await page.getByRole("link", { name: "Schedule" }).click();
 
     // POST request for schedule data and import into JSON files
     const dateStr = formatDate(getWeekStartSaturday(2));
@@ -61,7 +62,7 @@ export async function runLoginAndScraper() {
 
     console.log("Writing JSON data to file...");
     const fileName = dateStr.replace(/\//g, "-");
-    fs.writeFileSync(`data/${fileName}.json`, JSON.stringify(scheduleData, null, 2));
+    fs.writeFileSync(`scraped-data/${fileName}.json`, JSON.stringify(scheduleData, null, 2));
 
     console.log("Success! JSONs exported!");
 

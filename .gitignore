@@ -1,6 +1,6 @@
 node_modules/
 dist/
-data/
+scraped-data/
 .env
-gcal_creds.json
+google-oauth/
 *.log
