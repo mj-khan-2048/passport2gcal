@@ -1,8 +1,8 @@
-import { chromium } from "playwright";
+import { firefox } from "playwright";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import { getWeekStartSaturday, formatDate } from "./date-utils"
-import { askUser } from "./cmd-utils"
+import { askUser } from "./prompt-utils"
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ export async function runLoginAndScraper() {
     }
 
     // Main Login
-    const browser = await chromium.launch({ headless: true, channel: "chrome" });
+    const browser = await firefox.launch({ headless: true });
     const context = await browser.newContext();
     const page = await context.newPage();
 
