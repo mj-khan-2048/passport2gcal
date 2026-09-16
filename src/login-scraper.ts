@@ -1,12 +1,37 @@
 import { firefox } from "playwright";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
-import { getWeekStartSaturday, formatDate } from "./date-utils"
-import { askUser } from "./prompt-utils"
+import { getWeekStartSaturday, formatDate } from "./date-utils";
+import { Shift, extractShifts } from "./schedule-adapter";
+import { askUser } from "./prompt-utils";
 
 dotenv.config();
 
-export async function runLoginAndScraper() {
+async function getSchedule(page: import("playwright").Page): Promise<Shift[]> {
+    const dateStr = formatDate(getWeekStartSaturday(2));
+
+    console.log("Requesting data for schedule...");
+
+    const response = await page.request.post(
+        "https://www.publix.org/api/Sitecore/Scheduling/GetScheduleForWeek",
+        {
+            data: { date: dateStr, direction: dateStr },
+        }
+    );
+
+    const scheduleData = await response.json();
+    
+    // Export locally for debugging and error purposes
+    console.log("Writing JSON data to file...");
+    const fileName = dateStr.replace(/\//g, "-");
+    fs.writeFileSync(`cached-data/week-of-${fileName}.json`, JSON.stringify(scheduleData, null, 2));
+    
+    console.log("Success! JSONs exported! Returning data...");
+
+    return extractShifts(scheduleData); 
+}
+
+export async function runLoginAndScraper(): Promise<Shift[]> {
     // Setup variables from .env
     const email = process.env.PASSPORT_EMAIL;
     const password = process.env.PASSPORT_PASSWORD;
@@ -48,24 +73,10 @@ export async function runLoginAndScraper() {
     console.log("Navigating to Schedule page...");
 
     // POST request for schedule data and import into JSON files
-    const dateStr = formatDate(getWeekStartSaturday(2));
-
-    console.log("Requesting data for schedule...");
-    const response = await page.request.post(
-        "https://www.publix.org/api/Sitecore/Scheduling/GetScheduleForWeek",
-        {
-            data: { date: dateStr, direction: dateStr },
-        }
-    );
-
-    const scheduleData = await response.json();
-
-    console.log("Writing JSON data to file...");
-    const fileName = dateStr.replace(/\//g, "-");
-    fs.writeFileSync(`scraped-data/${fileName}.json`, JSON.stringify(scheduleData, null, 2));
-
-    console.log("Success! JSONs exported!");
+    const shifts = await getSchedule(page);
 
     console.log("Closing user agent...");
     await browser.close();
+
+    return shifts;
 }

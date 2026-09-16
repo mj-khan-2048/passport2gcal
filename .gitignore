@@ -1,6 +1,6 @@
 node_modules/
 dist/
-scraped-data/
+cached-data/
 .env
-google-oauth/
+google-oauth/token.json
 *.log

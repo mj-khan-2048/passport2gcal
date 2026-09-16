@@ -13,3 +13,9 @@ export function formatDate(date: Date): string {
     const yyyy = date.getFullYear();
     return `${mm}/${dd}/${yyyy}`;
 }
+
+export function toRFC3339(publixDateStr: string): string {
+    console.log("Trying to parse:", publixDateStr);
+    const date = new Date(publixDateStr);
+    return date.toISOString();
+}
