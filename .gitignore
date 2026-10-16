@@ -1,0 +1,7 @@
+node_modules/
+dist/
+cached-data/
+.env
+google-oauth/token.json
+google-oauth/credentials.json
+*.log
