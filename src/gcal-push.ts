@@ -5,7 +5,7 @@ dotenv.config();
 
 export async function pushShiftsToCalendar(shifts: Shift[], calendar: any) {
 
-    const CALENDAR_ID = process.env.CALENDAR_ID ?? "primary";
+    const CALENDAR_ID = process.env.CALENDAR_ID || "primary";
 
     for (const shift of shifts) {
         try {
