@@ -3,13 +3,13 @@ import * as readline from "readline/promises";
 /*
 Gets date of most recent Saturday (and following Saturdays based on parameter)R
 */
-export function getSaturdayDate(weeksFromNow: number = 0): Date {
+export function getSaturdayDate(weekOffset: number = 0): Date {
     const today = new Date();
     const dayOfTheWeek = today.getDay();
     const differenceToLastSaturday = (dayOfTheWeek + 1) % 7;
 
-    const saturdayDate = new Date();
-    saturdayDate.setDate((today.getDate() - differenceToLastSaturday) + (weeksFromNow * 7));
+    const saturdayDate = new Date(today);
+    saturdayDate.setDate((today.getDate() - differenceToLastSaturday) + (weekOffset * 7));
     return saturdayDate;
 }
 /*
