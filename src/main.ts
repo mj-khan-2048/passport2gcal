@@ -1,11 +1,11 @@
-import { runLoginAndScraper } from "./login-scraper";
-import { getAuthorizedClient } from "./google-auth";
-import { pushShiftsToCalendar } from "./calendar-utils";
+import { runLoginAndScraper } from "./login-scraper.js";
+import { getAuthorizedClient } from "./google-auth.js";
+import { pushShiftsToCalendar } from "./gcal-push.js";
 import { google } from "googleapis";
 
 async function main() {
-    const shifts = await runLoginAndScraper();
     const auth = await getAuthorizedClient();
+    const shifts = await runLoginAndScraper();
     const calendar = google.calendar({ version: "v3", auth });
     
     await pushShiftsToCalendar(shifts, calendar);
