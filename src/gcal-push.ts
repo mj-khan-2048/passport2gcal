@@ -1,4 +1,4 @@
-import { toRFC3339, Shift } from "./utils";
+import { toRFC3339, Shift } from "./utils.js";
 import * as dotenv from "dotenv";
 
 dotenv.config();

@@ -1,45 +1,49 @@
 import { firefox } from "playwright";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
-import { getSaturdayDate, toPublixDateStr } from "./date-utils";
-import { Shift, extractShifts } from "./schedule-adapter";
-import { askUser } from "./prompt-utils";
+import { getSaturdayDate, toPublixDateStr, Shift, extractShifts, askUser } from "./utils.js";
 
 dotenv.config();
 
 async function getSchedule(page: import("playwright").Page): Promise<Shift[]> {
-    const dateStr = toPublixDateStr(getSaturdayDate(2));
+    const offsets: number[] = [0];
+    const shifts: Shift[] = [];
 
-    console.log("Requesting data for schedule...");
+    for (const offset of offsets) {
+        const dateStr = toPublixDateStr(getSaturdayDate(offset));
 
-    const response = await page.request.post(
-        "https://www.publix.org/api/Sitecore/Scheduling/GetScheduleForWeek",
-        {
-            data: { date: dateStr, direction: dateStr },
-        }
-    );
+        console.log("Requesting data for schedule...");
 
-    const scheduleData = await response.json();
+        const response = await page.request.post(
+            "https://www.publix.org/api/Sitecore/Scheduling/GetScheduleForWeek",
+            {
+                data: { date: dateStr, direction: dateStr },
+            }
+        );
+
+        const scheduleData = await response.json();
+        
+        // Export locally for debugging and error purposes
+        console.log("Writing JSON data to file...");
+        const fileName = dateStr.replace(/\//g, "-");
+        fs.writeFileSync(`cached-data/week-of-${fileName}.json`, JSON.stringify(scheduleData, null, 2));
+        
+        console.log("Success! JSONs exported! Returning data...");
+
+        shifts.push(...extractShifts(scheduleData)); 
+    }
     
-    // Export locally for debugging and error purposes
-    console.log("Writing JSON data to file...");
-    const fileName = dateStr.replace(/\//g, "-");
-    fs.writeFileSync(`cached-data/week-of-${fileName}.json`, JSON.stringify(scheduleData, null, 2));
-    
-    console.log("Success! JSONs exported! Returning data...");
-
-    return extractShifts(scheduleData); 
+    return shifts;
 }
 
 export async function runLoginAndScraper(): Promise<Shift[]> {
     // Setup variables from .env
     const email = process.env.PASSPORT_EMAIL;
     const password = process.env.PASSPORT_PASSWORD;
-    const loginUrl = process.env.PASSPORT_LOGIN_URL;
 
     // .env Error Catch
-    if (!email || !password || !loginUrl) {
-        throw new Error("Missing PASSPORT_EMAIL, PASSPORT_PASSWORD, or PASSPORT_LOGIN_URL in .env");
+    if (!email || !password) {
+        throw new Error("Missing PASSPORT_EMAIL or PASSPORT_PASSWORD in .env");
     }
 
     // Main Login
@@ -47,7 +51,7 @@ export async function runLoginAndScraper(): Promise<Shift[]> {
     const context = await browser.newContext();
     const page = await context.newPage();
 
-    await page.goto(loginUrl);
+    await page.goto("https://www.publix.org/");
 
     console.log("Logging in...");
     await page.getByRole("button", { name: "Log in" }).click();
@@ -59,8 +63,8 @@ export async function runLoginAndScraper(): Promise<Shift[]> {
     console.log("Entering password...");
     await page.locator('input[type="password"]').fill(password);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await page.getByRole("button", { name: /Text/i }).click();
 
+    await page.getByRole("button", { name: /Text/i }).click();
     console.log("Waiting on OTP...");
     const code = await askUser("Enter the OTP code you received: ");
     await page.getByPlaceholder('Code').fill(code);
