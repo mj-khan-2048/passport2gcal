@@ -1,7 +1,6 @@
 node_modules/
 dist/
-cached-data/
 .env
-google-oauth/token.json
-google-oauth/credentials.json
+google-oauth/
 *.log
+src/TEST.ts
