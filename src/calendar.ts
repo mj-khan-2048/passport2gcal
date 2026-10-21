@@ -1,16 +1,10 @@
 import { toRFC3339, Shift } from "./utils.js";
-import * as dotenv from "dotenv";
 
-dotenv.config();
-
-export async function pushShiftsToCalendar(shifts: Shift[], calendar: any) {
-
-    const CALENDAR_ID = process.env.CALENDAR_ID || "primary";
-
+export async function pushShiftsToCalendar(shifts: Shift[], calendarSvcClient: any, calendarId: string) {
     for (const shift of shifts) {
         try {
-            await calendar.events.insert({
-                calendarId: CALENDAR_ID,
+            await calendarSvcClient.events.insert({
+                calendarId: calendarId,
                 requestBody: {
                     id: `shift${shift.id}`,
                     summary: "Shift",
@@ -21,8 +15,8 @@ export async function pushShiftsToCalendar(shifts: Shift[], calendar: any) {
             });
         } catch(err: any) {
             if (err.code === 409) {
-                await calendar.events.update({
-                    calendarId: CALENDAR_ID,
+                await calendarSvcClient.events.update({
+                    calendarId: calendarId,
                     eventId: `shift${shift.id}`,
                     requestBody: {
                         summary: "Shift",
