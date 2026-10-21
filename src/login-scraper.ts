@@ -6,7 +6,7 @@ import { getSaturdayDate, toPublixDateStr, Shift, extractShifts, askUser } from 
 dotenv.config();
 
 async function getSchedule(page: import("playwright").Page): Promise<Shift[]> {
-    const offsets: number[] = [0];
+    const offsets: number[] = [2];
     const shifts: Shift[] = [];
 
     for (const offset of offsets) {
